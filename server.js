@@ -442,16 +442,27 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, HOST, () => {
   ensureData();
   
-  // Force create admin if none exists
-  const { users } = readUsers();
-  if (!users || Object.keys(users).length === 0) {
-    console.log('No users found, creating default admin...');
-    const admin = { username: 'Semral_boss', role: 'admin', password: hashPassword('aerw3232'), balance: 0 };
-    writeUsers({ users: { [admin.username]: admin } });
-    console.log('Default admin created: Semral_boss / aerw3232');
+  // Always ensure admin exists
+  const data = readUsers();
+  const adminUsername = 'Semral_boss';
+  const adminPassword = 'aerw3232';
+  
+  if (!data.users[adminUsername]) {
+    console.log('Creating admin user...');
+    data.users[adminUsername] = { 
+      username: adminUsername, 
+      role: 'admin', 
+      password: hashPassword(adminPassword), 
+      balance: 0 
+    };
+    writeUsers(data);
+    console.log(`Admin created: ${adminUsername} / ${adminPassword}`);
+  } else {
+    console.log(`Admin exists: ${adminUsername}`);
   }
   
   console.log(`Server running on http://${HOST}:${PORT}`);
+  console.log(`Admin login: ${adminUsername} / ${adminPassword}`);
 });
 
 
