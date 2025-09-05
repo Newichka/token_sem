@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Онлайн запись — Tcoin</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <img src="logo/logo.png" alt="Логотип Tcoin" class="logo-img" />
+        <span class="brand-name">Tcoin</span>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Главная</a>
+        <a href="booking.html" class="nav-link active">Онлайн запись</a>
+        <a href="login.html" class="nav-link">Войти</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1 class="card-title">Онлайн запись</h1>
+      <p class="muted">Время указано по Екатеринбургу (Ekb, UTC+5), интервал — 30 минут.</p>
+
+      <form id="booking-form" class="form" novalidate>
+        <div class="row">
+          <label class="label" for="date">Дата</label>
+          <input id="date" name="date" type="date" class="input" required />
+        </div>
+
+        <div class="row">
+          <span class="label">Доступные слоты</span>
+          <div id="slots" class="slots" aria-live="polite"></div>
+          <input type="hidden" id="time" name="time" required />
+        </div>
+
+        <div class="row">
+          <label class="label" for="name">Имя</label>
+          <input id="name" name="name" type="text" class="input" placeholder="Иван Иванов" required />
+        </div>
+
+        <div class="row">
+          <label class="label" for="phone">Телефон</label>
+          <input id="phone" name="phone" type="tel" class="input" placeholder="+7 900 000-00-00" required />
+        </div>
+
+        <button class="primary" type="submit">Записаться</button>
+        <div id="result" class="muted" aria-live="polite"></div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-flex">
+      <div class="footer-half footer-copy">
+        <small>По всем вопросам - <a href="mailto:tcoin_ekb@inbox.ru">tcoin_ekb@inbox.ru</a></small>
+      </div>
+      <div class="footer-half">
+        <div id="map-booking" class="footer-map"></div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="scripts/booking.js"></script>
+  <script>
+    document.getElementById('year') && (document.getElementById('year').textContent = new Date().getFullYear());
+  </script>
+  <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+  <script>
+    (function(){
+      var coords = [56.836151, 60.614766];
+      function init(){
+        var el = document.getElementById('map-booking');
+        if (!el || !window.ymaps) return;
+        var map = new ymaps.Map('map-booking', { center: coords, zoom: 14, controls: ['zoomControl'] });
+        map.geoObjects.add(new ymaps.Placemark(coords, {}, { preset: 'islands#redDotIcon' }));
+      }
+      if (window.ymaps) ymaps.ready(init);
+    })();
+  </script>
+</body>
+</html>
+
+

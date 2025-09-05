@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход — Tcoin</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <img src="logo/logo.png" alt="Логотип Tcoin" class="logo-img" />
+        <span class="brand-name">Tcoin</span>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Главная</a>
+        <a href="booking.html" class="nav-link">Онлайн запись</a>
+        <a href="login.html" class="nav-link active">Войти</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1 class="card-title">Вход</h1>
+      <form id="login-form" class="form">
+        <div class="row">
+          <label class="label" for="username">Логин</label>
+          <input id="username" class="input" name="username" required placeholder="Логин" />
+        </div>
+        <div class="row">
+          <label class="label" for="password">Пароль</label>
+          <input id="password" class="input" name="password" type="password" required placeholder="******" />
+        </div>
+        <button type="submit" class="primary">Войти</button>
+        <div id="login-result" class="muted" aria-live="polite"></div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-flex">
+      <div class="footer-half footer-copy">
+        <small>По всем вопросам - <a href="mailto:tcoin_ekb@inbox.ru">tcoin_ekb@inbox.ru</a></small>
+      </div>
+      <div class="footer-half">
+        <div id="map-login" class="footer-map"></div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    const form = document.getElementById('login-form');
+    const out = document.getElementById('login-result');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      out.textContent = 'Входим...';
+      try {
+        const r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: form.username.value.trim(), password: form.password.value }) });
+        if (r.status === 429) { out.textContent = 'Слишком много попыток входа. Попробуйте позже.'; return; }
+        if (!r.ok) { out.textContent = 'Неверные учётные данные'; return; }
+        const data = await r.json();
+        if (data.user && data.user.role === 'admin') { location.href = 'dashboard.html#admin'; }
+        else { location.href = 'dashboard.html'; }
+      } catch (e) { out.textContent = 'Ошибка сети'; }
+    });
+  </script>
+  <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+  <script>
+    (function(){ var c=[56.836151,60.614766]; function init(){ var el=document.getElementById('map-login'); if(!el||!window.ymaps)return; var m=new ymaps.Map('map-login',{center:c,zoom:14,controls:['zoomControl']}); m.geoObjects.add(new ymaps.Placemark(c,{}, {preset:'islands#redDotIcon'})); } if(window.ymaps) ymaps.ready(init); })();
+  </script>
+</body>
+</html>
+
+

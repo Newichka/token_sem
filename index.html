@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tcoin — Главная</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <img src="logo/logo.png" alt="Логотип Tcoin" class="logo-img" />
+        <span class="brand-name">Tcoin</span>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="nav-link active">Главная</a>
+        <a href="booking.html" class="nav-link">Онлайн запись</a>
+        <a href="login.html" class="nav-link">Войти</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1 class="card-title">Курс Tcoin</h1>
+      <div class="rate-row">
+        <img src="logo/logo.png" alt="Логотип Tcoin" class="logo-img lg" />
+        <div class="rate">
+          <span class="rate-value" id="tcoin-rate">--</span>
+          <span class="rate-currency">₽</span>
+        </div>
+      </div>
+      <p class="muted">Место для доп текста, по необходимости</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-flex">
+      <div class="footer-half footer-copy">
+        <small>По всем вопросам - <a href="mailto:tcoin_ekb@inbox.ru">tcoin_ekb@inbox.ru</a></small>
+      </div>
+      <div class="footer-half">
+        <div id="map-index" class="footer-map"></div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year') && (document.getElementById('year').textContent = new Date().getFullYear());
+    (async function(){
+      try {
+        const r = await fetch('/api/rate');
+        if (r.ok) {
+          const data = await r.json();
+          const el = document.getElementById('tcoin-rate');
+          if (el) el.textContent = String(data.rate).replace('.', ',');
+        }
+      } catch(_) {}
+    })();
+  </script>
+  <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+  <script>
+    (function(){
+      var coords = [56.836151, 60.614766];
+      function init(){
+        var el = document.getElementById('map-index');
+        if (!el || !window.ymaps) return;
+        var map = new ymaps.Map('map-index', { center: coords, zoom: 14, controls: ['zoomControl'] });
+        map.geoObjects.add(new ymaps.Placemark(coords, {}, { preset: 'islands#redDotIcon' }));
+      }
+      if (window.ymaps) ymaps.ready(init);
+    })();
+  </script>
+</body>
+</html>
+
+

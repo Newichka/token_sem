@@ -1,0 +1,22 @@
+{
+  "users": {
+    "Semral_boss": {
+      "username": "Semral_boss",
+      "role": "admin",
+      "password": "c835480f16f9081074a2963342471b13$0edaa45b2e1b4534713ed7b623a4f48682001c8a9389f8fcf9d50f76d2a7e8b3",
+      "balance": 0
+    },
+    "Ivanov_Ivan": {
+      "username": "Ivanov_Ivan",
+      "role": "user",
+      "password": "2b4c6379de87fc6d4096ecb1a7e9c630$098a3fecc9bb48775d4b91358b0e90067f9452b35a2ff94b075bb02b4bb1db02",
+      "balance": 69
+    },
+    "Mart_Martov": {
+      "username": "Mart_Martov",
+      "role": "user",
+      "password": "df5b7fd2925d04ef8a109c320a5d11af$b949710afd7aae6ecdd107ecc3a98b8312dc82cf3cf46dac6d9b4a40ba244314",
+      "balance": 0
+    }
+  }
+}

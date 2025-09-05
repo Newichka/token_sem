@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Личный кабинет — Tcoin</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <img src="logo/logo.png" alt="Логотип Tcoin" class="logo-img" />
+        <span class="brand-name">Tcoin</span>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Главная</a>
+        <a href="booking.html" class="nav-link">Онлайн запись</a>
+        <a href="login.html" class="nav-link">Войти</a>
+        <button id="logout" class="nav-link" style="background:none;border:none;cursor:pointer">Выйти</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card" id="user-panel" hidden>
+      <h1 class="card-title">Мой кошелёк</h1>
+      <p class="muted">Пользователь: <span id="me-username"></span></p>
+      <div class="rate">
+        Баланс: <span id="wallet-balance">0</span> TCN
+      </div>
+    </section>
+
+    <section class="card" id="admin-panel" hidden>
+      <h2 class="card-title">Админ панель</h2>
+
+      <div class="row">
+        <h3>Курс Tcoin</h3>
+        <div class="row">
+          <label class="label" for="rate">Текущий курс</label>
+          <input id="rate" type="number" step="0.0001" class="input" />
+        </div>
+        <button id="save-rate" class="primary">Сохранить курс</button>
+        <div id="rate-result" class="muted"></div>
+      </div>
+
+      <div class="row">
+        <h3>Создать пользователя</h3>
+        <div class="row">
+          <label class="label" for="new-username">Логин</label>
+          <input id="new-username" name="new_username" class="input" autocomplete="off" autocapitalize="none" spellcheck="false" />
+        </div>
+        <div class="row">
+          <label class="label" for="new-password">Пароль</label>
+          <input id="new-password" name="new_password" type="password" class="input" autocomplete="new-password" />
+        </div>
+        <button id="create-user" class="primary">Создать</button>
+        <div id="create-user-result" class="muted"></div>
+      </div>
+
+      <div class="row two-col" style="margin-top:16px">
+        <div class="col">
+          <h3>Пополнить кошелёк</h3>
+          <div class="row">
+            <label class="label" for="topup-username">Логин пользователя</label>
+            <input id="topup-username" class="input" />
+          </div>
+          <div class="row">
+            <label class="label" for="topup-amount">Сумма</label>
+            <input id="topup-amount" type="number" min="0" step="0.01" class="input" />
+          </div>
+          <button id="topup" class="primary" style="margin-top:16px; margin-bottom:16px">Пополнить</button>
+          <div id="topup-result" class="muted"></div>
+        </div>
+        <div class="col">
+          <h3>Уменьшить кошелёк</h3>
+          <div class="row">
+            <label class="label" for="decrease-username">Логин пользователя</label>
+            <input id="decrease-username" class="input" />
+          </div>
+          <div class="row">
+            <label class="label" for="decrease-amount">Сумма</label>
+            <input id="decrease-amount" type="number" min="0" step="0.01" class="input" />
+          </div>
+          <button id="decrease" class="primary" style="margin-top:16px; margin-bottom:16px">Уменьшить</button>
+          <div id="decrease-result" class="muted"></div>
+        </div>
+      </div>
+    
+      <div class="row two-col" style="margin-top:32px">
+        <div class="col">
+          <h3>Пользователи</h3>
+          <ul id="users" class="users-list"></ul>
+        </div>
+        <div class="col">
+          <h3>Бронирования (на сегодня и будущее)</h3>
+          <ul id="bookings" class="users-list"></ul>
+        </div>
+      </div>
+
+      
+    
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-flex">
+      <div class="footer-half footer-copy">
+        <small>По всем вопросам - <a href="mailto:tcoin_ekb@inbox.ru">tcoin_ekb@inbox.ru</a></small>
+      </div>
+      <div class="footer-half">
+        <div id="map-dashboard" class="footer-map"></div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    async function api(path, opts){
+      const r = await fetch(path, Object.assign({ headers: { 'Content-Type':'application/json' } }, opts||{}));
+      if (!r.ok) throw new Error('http '+r.status);
+      return r.json();
+    }
+
+    async function bootstrap(){
+      try {
+        const me = await api('/api/me');
+        document.getElementById('me-username').textContent = me.user.username;
+        document.getElementById('user-panel').hidden = false;
+        const w = await api('/api/wallet');
+        document.getElementById('wallet-balance').textContent = w.balance;
+        if (me.user.role === 'admin') {
+          document.getElementById('admin-panel').hidden = false;
+          await refreshUsers();
+          await refreshBookings();
+        }
+      } catch (e) {
+        location.href = 'login.html';
+      }
+    }
+
+    async function refreshUsers(){
+      try{
+        const data = await api('/api/users');
+        const box = document.getElementById('users');
+        box.innerHTML = '';
+        data.users.forEach(u => {
+          const li = document.createElement('li');
+          li.className = 'user-item user-item-row';
+          
+          const content = document.createElement('div');
+          content.style.display = 'flex';
+          content.style.justifyContent = 'space-between';
+          content.style.alignItems = 'center';
+          content.style.width = '100%';
+          
+          const info = document.createElement('span');
+          info.textContent = `${u.username} — ${u.role} — ${u.balance} TCN`;
+          
+          
+          if (u.role !== 'admin') {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Удалить';
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.style.cssText = 'background:#ff4757;border:1px solid #ff4757;color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;cursor:pointer;margin-left:8px';
+            deleteBtn.addEventListener('click', async () => {
+              if (confirm(`Удалить пользователя "${u.username}"?`)) {
+                try {
+                  await api(`/api/users/${encodeURIComponent(u.username)}`, { method: 'DELETE' });
+                  await refreshUsers();
+                } catch(e) {
+                  if (e.message.includes('cannot delete yourself')) {
+                    alert('Нельзя удалить самого себя');
+                  } else if (e.message.includes('cannot delete admin users')) {
+                    alert('Нельзя удалить администратора');
+                  } else {
+                    alert('Ошибка удаления');
+                  }
+                }
+              }
+            });
+            content.appendChild(deleteBtn);
+          } else {
+            
+            const adminBadge = document.createElement('span');
+            adminBadge.textContent = 'Админ';
+            adminBadge.style.cssText = 'background:#5b8cff;color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;margin-left:8px';
+            content.appendChild(adminBadge);
+          }
+          
+          content.appendChild(info);
+          li.appendChild(content);
+          box.appendChild(li);
+        });
+      }catch(e){ /* non-admin */ }
+    }
+
+    document.getElementById('create-user').addEventListener('click', async () => {
+      const username = document.getElementById('new-username').value.trim();
+      const password = document.getElementById('new-password').value;
+      const out = document.getElementById('create-user-result');
+      out.textContent = 'Создание...';
+      try { await api('/api/users', { method: 'POST', body: JSON.stringify({ username, password }) }); out.textContent = 'Готово'; await refreshUsers(); }
+      catch(e){ out.textContent = 'Ошибка: проверьте данные/доступ'; }
+    });
+
+    document.getElementById('topup').addEventListener('click', async () => {
+      const username = document.getElementById('topup-username').value.trim();
+      const amount = Number(document.getElementById('topup-amount').value);
+      const out = document.getElementById('topup-result');
+      out.textContent = 'Пополнение...';
+      try { const r = await api(`/api/users/${encodeURIComponent(username)}/topup`, { method:'POST', body: JSON.stringify({ amount }) }); out.textContent = `Новый баланс: ${r.balance} TCN`; await refreshUsers(); }
+      catch(e){ out.textContent = 'Ошибка: проверьте данные/доступ'; }
+    });
+
+    document.getElementById('decrease').addEventListener('click', async () => {
+      const username = document.getElementById('decrease-username').value.trim();
+      const amount = Number(document.getElementById('decrease-amount').value);
+      const out = document.getElementById('decrease-result');
+      out.textContent = 'Уменьшение...';
+      try { const r = await api(`/api/users/${encodeURIComponent(username)}/decrease`, { method:'POST', body: JSON.stringify({ amount }) }); out.textContent = `Новый баланс: ${r.balance} TCN`; await refreshUsers(); }
+      catch(e){ out.textContent = 'Ошибка: проверьте данные/доступ'; }
+    });
+
+    function formatYmdToDotted(ymd){
+      const [y,m,d] = String(ymd).split('-');
+      if (!y||!m||!d) return ymd;
+      return `${d}.${m}.${y}`;
+    }
+
+    async function refreshBookings(){
+      try {
+        const data = await api('/api/bookings');
+        const list = document.getElementById('bookings');
+        list.innerHTML = '';
+        data.bookings.forEach(b => {
+          const li = document.createElement('li');
+          li.className = 'user-item booking-item';
+          
+          const content = document.createElement('div');
+          content.style.display = 'flex';
+          content.style.justifyContent = 'space-between';
+          content.style.alignItems = 'center';
+          content.style.width = '100%';
+          
+          const info = document.createElement('span');
+          info.textContent = `${formatYmdToDotted(b.date)} ${b.time} — ${b.name} — ${b.phone}`;
+          
+          const deleteBtn = document.createElement('button');
+          deleteBtn.textContent = 'Удалить';
+          deleteBtn.className = 'delete-btn';
+          deleteBtn.style.cssText = 'background:#ff4757;border:1px solid #ff4757;color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;cursor:pointer;margin-left:8px';
+          deleteBtn.addEventListener('click', async () => {
+            if (confirm('Удалить эту запись?')) {
+              try {
+                await api(`/api/bookings/${b.id}`, { method: 'DELETE' });
+                await refreshBookings();
+              } catch(e) {
+                alert('Ошибка удаления');
+              }
+            }
+          });
+          
+          content.appendChild(info);
+          content.appendChild(deleteBtn);
+          li.appendChild(content);
+          list.appendChild(li);
+        });
+      } catch(e) { /* ignore for non-admin */ }
+    }
+
+    document.getElementById('logout').addEventListener('click', async () => {
+      try { await api('/api/logout', { method: 'POST' }); } finally { location.href = 'login.html'; }
+    });
+
+    // Load and edit Tcoin rate
+    async function loadRate(){
+      try { const r = await api('/api/rate'); document.getElementById('rate') && (document.getElementById('rate').value = r.rate); } catch(_){}
+    }
+    document.addEventListener('click', async (e) => {
+      if (e.target && e.target.id === 'save-rate') {
+        const out = document.getElementById('rate-result');
+        out.textContent = 'Сохранение...';
+        try {
+          const rate = Number(document.getElementById('rate').value);
+          const r = await api('/api/rate', { method: 'POST', body: JSON.stringify({ rate }) });
+          out.textContent = 'Готово: ' + r.rate;
+        } catch(_) { out.textContent = 'Ошибка сохранения'; }
+      }
+    });
+
+    bootstrap();
+    loadRate();
+  </script>
+  <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+  <script>
+    (function(){ var c=[56.836151,60.614766]; function init(){ var el=document.getElementById('map-dashboard'); if(!el||!window.ymaps)return; var m=new ymaps.Map('map-dashboard',{center:c,zoom:14,controls:['zoomControl']}); m.geoObjects.add(new ymaps.Placemark(c,{}, {preset:'islands#redDotIcon'})); } if(window.ymaps) ymaps.ready(init); })();
+  </script>
+</body>
+</html>
+
+

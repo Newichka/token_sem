@@ -1,0 +1,21 @@
+{
+  "name": "tcoin-website",
+  "version": "1.0.0",
+  "description": "Tcoin - система управления курсом и бронированием",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["tcoin", "booking", "cryptocurrency", "nodejs"],
+  "author": "Tcoin Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/tcoin-website.git"
+  }
+}
