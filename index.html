@@ -35,7 +35,15 @@
           <span class="rate-currency">₽</span>
         </div>
       </div>
+      <p class="muted">Место для доп текста, по необходимости</p>
       
+      <!-- Admin creation section -->
+      <div id="admin-creation" style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid var(--border);">
+        <h3 style="margin-top: 0;">Создание администратора</h3>
+        <p class="muted" style="font-size: 14px;">Если у вас нет доступа к системе, создайте администратора:</p>
+        <button id="create-admin-btn" class="primary" style="margin-top: 10px;">Создать администратора</button>
+        <div id="admin-result" class="muted" style="margin-top: 10px;"></div>
+      </div>
     </section>
   </main>
 
@@ -52,6 +60,8 @@
 
   <script>
     document.getElementById('year') && (document.getElementById('year').textContent = new Date().getFullYear());
+    
+    // Load rate
     (async function(){
       try {
         const r = await fetch('/api/rate');
@@ -62,6 +72,46 @@
         }
       } catch(_) {}
     })();
+    
+    // Admin creation
+    document.getElementById('create-admin-btn').addEventListener('click', async () => {
+      const resultDiv = document.getElementById('admin-result');
+      const button = document.getElementById('create-admin-btn');
+      
+      button.textContent = 'Создание...';
+      button.disabled = true;
+      resultDiv.textContent = '';
+      
+      try {
+        const response = await fetch('/api/init-admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            secret: 'init123',
+            username: 'admin',
+            password: 'aerw3232'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          resultDiv.textContent = '✅ Администратор создан! Логин: admin, Пароль: aerw3232';
+          resultDiv.style.color = '#28a745';
+          button.textContent = 'Админ создан';
+        } else {
+          resultDiv.textContent = `❌ Ошибка: ${data.error || 'Неизвестная ошибка'}`;
+          resultDiv.style.color = '#dc3545';
+          button.textContent = 'Создать администратора';
+          button.disabled = false;
+        }
+      } catch (error) {
+        resultDiv.textContent = `❌ Ошибка сети: ${error.message}`;
+        resultDiv.style.color = '#dc3545';
+        button.textContent = 'Создать администратора';
+        button.disabled = false;
+      }
+    });
   </script>
   <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
   <script>

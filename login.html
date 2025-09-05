@@ -54,7 +54,11 @@
   </footer>
 
   <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
+    // Check if year element exists before setting textContent
+    const yearElement = document.getElementById('year');
+    if (yearElement) {
+      yearElement.textContent = new Date().getFullYear();
+    }
     const form = document.getElementById('login-form');
     const out = document.getElementById('login-result');
     form.addEventListener('submit', async (e) => {
