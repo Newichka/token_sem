@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Инициализация админа</title>
+</head>
+<body>
+    <h1>Создание администратора</h1>
+    <form id="initForm">
+        <div>
+            <label>Логин:</label>
+            <input type="text" id="username" value="admin" required>
+        </div>
+        <div>
+            <label>Пароль:</label>
+            <input type="password" id="password" value="aerw3232" required>
+        </div>
+        <button type="submit">Создать админа</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('initForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const result = document.getElementById('result');
+            result.textContent = 'Создание...';
+            
+            try {
+                const response = await fetch('/api/init-admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        secret: 'init123',
+                        username: document.getElementById('username').value,
+                        password: document.getElementById('password').value
+                    })
+                });
+                
+                if (response.ok) {
+                    result.textContent = 'Админ создан успешно! Теперь можете войти.';
+                } else {
+                    result.textContent = 'Ошибка: ' + (await response.text());
+                }
+            } catch (error) {
+                result.textContent = 'Ошибка сети: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>
